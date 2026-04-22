@@ -1,6 +1,6 @@
 {
   "name": "@cardinal-odp/algo-params-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "build": "pnpm exec unbuild",
