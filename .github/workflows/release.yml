@@ -16,6 +16,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
+      CHANGESETS_GITHUB_TOKEN: ${{ secrets.CHANGESETS_GITHUB_TOKEN }}
       # Prefer a PAT when the repository blocks pull-request creation from GITHUB_TOKEN.
       RELEASE_GITHUB_TOKEN: ${{ secrets.CHANGESETS_GITHUB_TOKEN != '' && secrets.CHANGESETS_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
 
@@ -38,7 +39,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Release token notice
-        if: ${{ secrets.CHANGESETS_GITHUB_TOKEN == '' }}
+        if: ${{ env.CHANGESETS_GITHUB_TOKEN == '' }}
         run: |
           echo "Using GITHUB_TOKEN for changesets/action."
           echo "If PR creation fails with 'GitHub Actions is not permitted to create or approve pull requests',"
