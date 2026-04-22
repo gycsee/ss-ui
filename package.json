@@ -19,6 +19,7 @@
     "@types/react-dom": "^19.0.0",
     "tsup": "^8.3.5",
     "typescript": "^5.8.2",
-    "unbuild": "^3.6.1"
+    "unbuild": "^3.6.1",
+    "vue-tsc": "^3.0.0"
   }
 }
