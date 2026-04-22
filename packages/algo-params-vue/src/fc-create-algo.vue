@@ -99,6 +99,7 @@ const injectInfoPopupContainer = (rules: any[]): any[] => {
 
       nextItem.info = {
         ...baseInfo,
+        align: baseInfo.align ?? 'left',
         getPopupContainer: (triggerNode: any) =>
           resolveTooltipPopupContainer(triggerNode),
       };
