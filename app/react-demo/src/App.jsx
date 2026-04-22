@@ -1,176 +1,108 @@
-import { Button, Card, Divider, Space, Tag, Typography } from 'antd';
-import { useRef, useState } from 'react';
+import { Button, Space, Tag, Typography } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 
-import FcCreateAlgoReact from '@cardinal-odp/algo-params-react';
-import '@cardinal-odp/algo-params-react/style.css';
+import AlgoParamsReactDemo from './demos/AlgoParamsReactDemo.jsx';
+import Packing3DReactDemo from './demos/Packing3DReactDemo.jsx';
 
-const rule = [
+const DEMOS = [
   {
-    type: 'input',
-    field: 'name',
-    title: 'Strategy Name',
-    $required: 'Please input a strategy name',
-    props: {
-      placeholder: 'Mean Reversion v1',
-    },
+    key: 'packing-3d-react',
+    title: '@cardinal-odp/packing-3d-react',
+    description: '3D 装箱场景展示，覆盖主题、未装箱区和高亮交互。',
+    component: Packing3DReactDemo,
   },
   {
-    type: 'select',
-    field: 'market',
-    title: 'Market',
-    options: [
-      { label: 'US Equities', value: 'us' },
-      { label: 'Crypto', value: 'crypto' },
-      { label: 'Futures', value: 'futures' },
-    ],
-  },
-  {
-    type: 'switch',
-    field: 'enabled',
-    title: 'Enabled',
-    value: true,
-    props: {
-      checkedChildren: 'On',
-      unCheckedChildren: 'Off',
-    },
-  },
-  {
-    type: 'checkbox',
-    field: 'signals',
-    title: 'Signals',
-    options: [
-      { label: 'RSI', value: 'rsi' },
-      { label: 'MACD', value: 'macd' },
-      { label: 'Volume Spike', value: 'volume' },
-    ],
-  },
-  {
-    type: 'aDivider',
-    title: 'Risk Limits',
-  },
-  {
-    type: 'inputNumber',
-    field: 'maxPosition',
-    title: 'Max Position',
-    props: {
-      min: 1,
-      max: 100,
-    },
-  },
-  {
-    type: 'div',
-    title: 'Notes',
-    children: ['This block verifies layout and preview rendering.'],
+    key: 'algo-params-react',
+    title: '@cardinal-odp/algo-params-react',
+    description: 'React 表单 schema 渲染示例，覆盖编辑、预览、校验和提交。',
+    component: AlgoParamsReactDemo,
   },
 ];
 
-const option = {
-  form: {
-    layout: 'horizontal',
-    labelCol: { span: 6 },
-    wrapperCol: { span: 18 },
-  },
-  formData: {
-    market: 'crypto',
-    enabled: true,
-    signals: ['rsi', 'volume'],
-    maxPosition: 20,
-  },
-  onSubmit(formData, api) {
-    api.submitResult = {
-      ...formData,
-      submittedAt: new Date().toISOString(),
-    };
-  },
-};
+const DEMO_MAP = new Map(DEMOS.map((demo) => [demo.key, demo]));
+const DEFAULT_ROUTE = 'packing-3d-react';
 
-function pretty(value) {
-  return JSON.stringify(value, null, 2);
+function normalizeRoute(hash) {
+  const value = hash.replace(/^#\/?/, '').trim();
+
+  if (DEMO_MAP.has(value)) {
+    return value;
+  }
+
+  return DEFAULT_ROUTE;
+}
+
+function updateHash(route, replace = false) {
+  const nextHash = `#/${route}`;
+
+  if (replace) {
+    window.history.replaceState(null, '', nextHash);
+    return;
+  }
+
+  window.location.hash = nextHash;
 }
 
 export default function App() {
-  const formRef = useRef(null);
-  const [mode, setMode] = useState('edit');
-  const [latestChange, setLatestChange] = useState(option.formData);
-  const [latestSubmit, setLatestSubmit] = useState(null);
-  const [latestSchema, setLatestSchema] = useState(null);
+  const [route, setRoute] = useState(() => {
+    if (typeof window === 'undefined') {
+      return DEFAULT_ROUTE;
+    }
 
-  const handleValidate = async () => {
-    const valid = await formRef.current?.validate();
-    window.alert(valid ? 'Validation passed' : 'Validation failed');
-  };
+    return normalizeRoute(window.location.hash);
+  });
 
-  const handleSubmit = async () => {
-    const result = await formRef.current?.submit();
-    setLatestSubmit(result ?? null);
-    setLatestSchema(formRef.current?.getFormData() ?? null);
-  };
+  useEffect(() => {
+    const nextRoute = normalizeRoute(window.location.hash);
+    if (nextRoute !== window.location.hash.replace(/^#\/?/, '').trim()) {
+      updateHash(nextRoute, true);
+    }
+    setRoute(nextRoute);
 
-  const handleReset = () => {
-    formRef.current?.reset();
-    setLatestSubmit(null);
-  };
+    const handleHashChange = () => {
+      setRoute(normalizeRoute(window.location.hash));
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  const activeDemo = useMemo(() => DEMO_MAP.get(route) ?? DEMO_MAP.get(DEFAULT_ROUTE), [route]);
+  const ActiveComponent = activeDemo.component;
 
   return (
     <div className="demo-shell">
-      <div className="demo-header">
-        <div>
-          <Typography.Title level={2}>algo-params-react demo</Typography.Title>
+      <div className="demo-shell__hero">
+        <div className="demo-shell__copy">
+          <Typography.Title level={2}>React Package Demos</Typography.Title>
           <Typography.Paragraph>
-            Workspace demo for verifying schema rendering, validation, submit, reset,
-            and preview mode.
+            `react-demo` 统一承载多个 workspace 包的可交互示例。当前通过 hash
+            路由切换页面，不额外引入路由依赖。
           </Typography.Paragraph>
         </div>
-        <Tag color={mode === 'edit' ? 'blue' : 'gold'}>{mode}</Tag>
+        <Tag color="blue">{activeDemo.key}</Tag>
       </div>
 
-      <Space wrap size="middle" className="demo-actions">
-        <Button type="primary" onClick={handleSubmit}>
-          Submit
-        </Button>
-        <Button onClick={handleValidate}>Validate</Button>
-        <Button onClick={handleReset}>Reset</Button>
-        <Button onClick={() => setLatestSchema(formRef.current?.getFormData() ?? null)}>
-          Snapshot Schema
-        </Button>
-        <Button onClick={() => setMode((current) => (current === 'edit' ? 'preview' : 'edit'))}>
-          Toggle Preview
-        </Button>
-      </Space>
-
-      <div className="demo-grid">
-        <Card title="Form Demo">
-          <FcCreateAlgoReact
-            ref={formRef}
-            mode={mode}
-            option={option}
-            rule={rule}
-            onChange={setLatestChange}
-            onSubmit={setLatestSubmit}
-            onValidate={(valid) => {
-              console.log('react demo validate', valid);
-            }}
-          />
-        </Card>
-
-        <Card title="Live Form Data">
-          <pre>{pretty(latestChange)}</pre>
-        </Card>
-
-        <Card title="Latest Submit Result">
-          <pre>{pretty(latestSubmit)}</pre>
-        </Card>
-
-        <Card title="Schema Snapshot">
-          <pre>{pretty(latestSchema)}</pre>
-        </Card>
+      <div className="demo-shell__nav">
+        <Space wrap size={[12, 12]}>
+          {DEMOS.map((demo) => (
+            <Button
+              key={demo.key}
+              type={demo.key === route ? 'primary' : 'default'}
+              onClick={() => updateHash(demo.key)}
+            >
+              {demo.title}
+            </Button>
+          ))}
+        </Space>
+        <Typography.Paragraph className="demo-shell__nav-copy" type="secondary">
+          {activeDemo.description}
+        </Typography.Paragraph>
       </div>
 
-      <Divider />
-
-      <Typography.Paragraph type="secondary">
-        Package under test: <code>@cardinal-odp/algo-params-react</code>
-      </Typography.Paragraph>
+      <ActiveComponent />
     </div>
   );
 }

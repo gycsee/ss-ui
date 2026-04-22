@@ -10,9 +10,13 @@
   },
   "dependencies": {
     "@cardinal-odp/algo-params-react": "workspace:*",
+    "@cardinal-odp/packing-3d-react": "workspace:*",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
     "antd": "^5.24.9",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.4.1",
