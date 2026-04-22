@@ -1,0 +1,70 @@
+.fc-create-algo-react {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.fc-create-algo-react__scroll {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding-inline-end: 8px;
+  border-radius: 8px;
+}
+
+.fc-create-algo-react__empty {
+  display: flex;
+  min-height: 160px;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.fc-create-algo-react .ant-card-head {
+  border-bottom: none;
+}
+
+.fc-create-algo-react .fc-create-algo-react__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.fc-create-algo-react .fc-create-algo-react__label-text {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-create-algo-react .fc-create-algo-react__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 999px;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1;
+  cursor: help;
+}
+
+.fc-create-algo-react .ant-card-hoverable {
+  transition: box-shadow 0.3s;
+}
+
+.fc-create-algo-react .ant-card-hoverable:hover {
+  box-shadow: 0 8px 16px -6px
+    var(--fc-create-shadow-color, rgba(22, 119, 255, 0.35)) !important;
+}
+
+.fc-create-algo-react.is-edit-mode .ant-form-item-control {
+  max-width: var(--fc-create-control-max-width, 500px);
+}

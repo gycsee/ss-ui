@@ -1,0 +1,45 @@
+{
+  "name": "@decision/algo-params-react",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm unbuild",
+    "test": "node --test ./__tests__/*.test.mjs"
+  },
+  "files": [
+    "dist",
+    "src/index.d.ts",
+    "src/types.d.ts"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./style.css": {
+      "default": "./dist/style.css"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./src/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "./style.css": {
+        "default": "./dist/style.css"
+      }
+    }
+  },
+  "peerDependencies": {
+    "antd": "^5.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  }
+}
