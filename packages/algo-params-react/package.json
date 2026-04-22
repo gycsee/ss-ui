@@ -27,6 +27,7 @@
     }
   },
   "publishConfig": {
+    "access": "public",
     "exports": {
       ".": {
         "types": "./src/index.d.ts",
