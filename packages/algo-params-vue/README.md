@@ -1,4 +1,4 @@
-# `@decision/algo-params-vue`
+# `@cardinal-odp/algo-params-vue`
 
 Vue 3 renderer for the `FcCreateAlgo` schema used in this repo.
 
@@ -12,13 +12,13 @@ This package is a thin wrapper around `@form-create/ant-design-vue`, with a stab
 ## Install
 
 ```bash
-npm install @decision/algo-params-vue vue ant-design-vue @form-create/ant-design-vue
+npm install @cardinal-odp/algo-params-vue vue ant-design-vue @form-create/ant-design-vue
 ```
 
 Then import the bundled styles:
 
 ```ts
-import '@decision/algo-params-vue/style.css';
+import '@cardinal-odp/algo-params-vue/style.css';
 ```
 
 ## Usage
@@ -29,8 +29,8 @@ import { ref } from 'vue';
 
 import FcCreateAlgo, {
   type FcCreateAlgoExpose,
-} from '@decision/algo-params-vue';
-import '@decision/algo-params-vue/style.css';
+} from '@cardinal-odp/algo-params-vue';
+import '@cardinal-odp/algo-params-vue/style.css';
 
 const fcRef = ref<FcCreateAlgoExpose>();
 
@@ -162,7 +162,7 @@ The package also exports pure helpers:
 import {
   injectInfoToRules,
   normalizePreviewRules,
-} from '@decision/algo-params-vue';
+} from '@cardinal-odp/algo-params-vue';
 ```
 
 These are useful if you need to preprocess schema data outside the component.

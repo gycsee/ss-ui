@@ -1,5 +1,5 @@
 {
-  "name": "@decision/algo-params-vue",
+  "name": "@cardinal-odp/algo-params-vue",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

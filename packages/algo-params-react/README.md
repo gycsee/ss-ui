@@ -1,4 +1,4 @@
-# `@decision/algo-params-react`
+# `@cardinal-odp/algo-params-react`
 
 React renderer for the `FcCreateAlgo` schema used in this repo.
 
@@ -11,13 +11,13 @@ Official package list: https://www.form-create.com/en/v3/guide/packages
 ## Install
 
 ```bash
-npm install @decision/algo-params-react react react-dom antd
+npm install @cardinal-odp/algo-params-react react react-dom antd
 ```
 
 Then import the bundled styles:
 
 ```ts
-import '@decision/algo-params-react/style.css';
+import '@cardinal-odp/algo-params-react/style.css';
 ```
 
 ## Usage
@@ -27,8 +27,8 @@ import { useMemo, useRef } from 'react';
 
 import FcCreateAlgoReact, {
   type FcCreateAlgoRef,
-} from '@decision/algo-params-react';
-import '@decision/algo-params-react/style.css';
+} from '@cardinal-odp/algo-params-react';
+import '@cardinal-odp/algo-params-react/style.css';
 
 export default function Demo() {
   const formRef = useRef<FcCreateAlgoRef>(null);
