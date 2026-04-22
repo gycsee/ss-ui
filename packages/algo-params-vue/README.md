@@ -1,21 +1,19 @@
 # `@cardinal-odp/algo-params-vue`
 
-Vue 3 renderer for the `FcCreateAlgo` schema used in this repo.
+Vue 3 wrapper around `@form-create/ant-design-vue` for the `FcCreateAlgo` schema used in this repo.
 
-This package is a thin wrapper around `@form-create/ant-design-vue`, with a stable API for:
+It adds a stable wrapper API around:
 
 - rendering `rule + option`
 - edit / preview mode switching
 - field info tooltip injection
-- schema round-tripping with `option.formData`
+- schema round-tripping through `option.formData`
 
 ## Install
 
 ```bash
 npm install @cardinal-odp/algo-params-vue vue ant-design-vue @form-create/ant-design-vue
 ```
-
-Then import the bundled styles:
 
 ```ts
 import '@cardinal-odp/algo-params-vue/style.css';
@@ -26,6 +24,8 @@ import '@cardinal-odp/algo-params-vue/style.css';
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
+
+import { Button, Space } from 'ant-design-vue';
 
 import FcCreateAlgo, {
   type FcCreateAlgoExpose,
@@ -42,7 +42,7 @@ const rule = [
     props: {
       placeholder: '请输入名称',
     },
-    validate: [{ required: true }],
+    validate: [{ required: true, message: '请输入名称' }],
   },
   {
     type: 'select',
@@ -57,13 +57,19 @@ const rule = [
 
 const option = {
   form: {
-    colon: true,
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 },
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
   },
   formData: {
     status: 'enabled',
   },
+};
+
+const handleValidate = async () => {
+  const valid = await fcRef.value?.validate();
+  if (!valid) return;
+
+  console.log(fcRef.value?.getFormData());
 };
 
 const handleSubmit = async () => {
@@ -73,90 +79,70 @@ const handleSubmit = async () => {
 </script>
 
 <template>
+  <Space style="margin-bottom: 16px">
+    <Button type="primary" @click="handleSubmit">Submit</Button>
+    <Button @click="handleValidate">Validate + Inspect</Button>
+  </Space>
+
   <FcCreateAlgo
     ref="fcRef"
     :option="option"
     :rule="rule"
     mode="edit"
-    @submit="handleSubmit"
+    @change="(formData) => console.log('change', formData)"
+    @submit="(result) => console.log('submit event', result)"
   />
 </template>
 ```
 
-## Props
+`@submit` is emitted after calling `fcRef.value?.submit()` and the wrapper receives a submit result. It is not a click event for a built-in submit button.
 
-`FcCreateAlgo` accepts these props:
+## Props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `rule` | `any[]` | `[]` | Form schema rules |
-| `option` | `Record<string, any>` | `undefined` | Form options, including `form` and `formData` |
-| `mode` | `'edit' \| 'preview'` | `'preview'` | Render editable controls or readonly preview |
-| `showInfo` | `boolean` | `true` | Whether to inject field info tooltip |
-| `infoFormatter` | `(rule) => string` | `undefined` | Custom tooltip content builder |
-| `emptyText` | `string` | `'暂无表单配置'` | Empty state content |
-| `popupContainer` | `HTMLElement \| ((trigger) => HTMLElement)` | `undefined` | Popup mount target for dropdown-like controls |
-| `controlMaxWidth` | `number \| string` | `'500px'` | Max width for controls in edit mode |
+| `rule` | `any[]` | `[]` | Schema rules |
+| `option` | `Record<string, any>` | `undefined` | Schema option object passed to `form-create` |
+| `mode` | `'edit' \| 'preview'` | `'preview'` | Editable form or readonly preview |
+| `showInfo` | `boolean` | `true` | Inject tooltip info for fields and `div` title blocks |
+| `infoFormatter` | `(rule) => string` | `undefined` | Custom tooltip content |
+| `emptyText` | `string` | `'暂无表单配置'` | Empty state text |
+| `popupContainer` | `HTMLElement \| ((triggerNode) => HTMLElement \| null \| undefined)` | `undefined` | Popup mount target for label tooltips and popup controls such as dropdowns |
+| `controlMaxWidth` | `number \| string` | `'500px'` | Max width CSS variable for form controls |
 
 ## Events
 
-The component emits:
-
 | Event | Payload | Description |
 | --- | --- | --- |
-| `ready` | `api` | Called when the underlying FormCreate API is ready |
-| `change` | `formData` | Called when form values change |
-| `submit` | `result` | Called after `submit()` resolves |
-| `validate` | `boolean` | Called after validation |
+| `ready` | `api` | Emitted when the underlying FormCreate API is ready |
+| `change` | `formData` | Emitted when form values change |
+| `submit` | `result` | Emitted after `submit()` resolves successfully |
+| `validate` | `boolean` | Emitted after `validate()` completes |
 
 ## Exposed Methods
-
-Use `ref` to access the imperative API:
 
 ```ts
 await fcRef.value?.validate();
 await fcRef.value?.submit();
 fcRef.value?.reset();
-const formData = fcRef.value?.getFormData();
-const api = fcRef.value?.getApi();
 fcRef.value?.setSchema(nextRule, nextOption);
-```
 
-Methods:
+const schema = fcRef.value?.getFormData();
+const api = fcRef.value?.getApi();
+```
 
 | Method | Description |
 | --- | --- |
-| `validate()` | Runs field validation and returns `Promise<boolean>` |
-| `submit()` | Triggers FormCreate submit and returns submit result |
-| `reset()` | Resets the current form |
-| `getFormData()` | Returns `{ rule, option }` with the latest `formData` merged in |
+| `validate()` | Runs validation and returns `Promise<boolean>` |
+| `submit()` | Calls the underlying FormCreate submit flow and returns `submitResult` when available |
+| `reset()` | Resets fields through the underlying FormCreate API |
+| `getFormData()` | Returns `{ rule, option }` with latest `option.formData` merged in |
 | `getApi()` | Returns the underlying FormCreate API |
-| `setSchema(rule, option)` | Imperatively replaces schema |
+| `setSchema(rule, option)` | Replaces the current schema |
 
-## Schema Compatibility
+If the underlying submit flow does not produce `submitResult`, or validation fails, `submit()` returns `undefined`.
 
-This package is intended to consume the same schema shape already used in the current Vue app.
-
-Supported behavior:
-
-- Native rendering through `@form-create/ant-design-vue`
-- `option.formData` backfill into `rule`
-- Preview-mode normalization for:
-  - `select`
-  - `cascader`
-  - `switch`
-  - `radio`
-  - `checkbox`
-  - `datePicker` / `timePicker`
-  - `slider`
-- Info tooltip injection for:
-  - fields with `field`
-  - content blocks with `type: 'div'` and `title`
-- Serialized function restoration for schema values containing the `FORM-CREATE-PREFIX-function` marker
-
-## Utilities
-
-The package also exports pure helpers:
+## Exported Utilities
 
 ```ts
 import {
@@ -165,29 +151,31 @@ import {
 } from '@cardinal-odp/algo-params-vue';
 ```
 
-These are useful if you need to preprocess schema data outside the component.
+These helpers are pure functions and can be used outside the component.
+
+## Wrapper Behavior
+
+This package keeps native rendering on top of `@form-create/ant-design-vue`, and adds:
+
+- `option.formData` backfill into `rule`
+- preview normalization for `select`, `cascader`, `switch`, `radio`, `checkbox`, `datePicker`, `timePicker`, and `slider`
+- info tooltip injection for fields and `type: 'div'` title blocks
+- serialized function restoration for schema values exported from `form-create`
 
 ## Styling
 
-The package ships a minimal standalone stylesheet and does not depend on this repo's Tailwind classes or theme variables.
+The package ships a standalone stylesheet.
 
-Available CSS variables:
+Custom colors now follow the active Ant Design Vue theme token by default. You can still override them with CSS variables.
 
 ```css
 --fc-create-control-max-width
+--fc-create-empty-color
+--fc-create-card-hover-shadow
 --fc-create-shadow-color
 ```
 
-## Important Notes
+## Notes
 
-- This package does not generate schema from raw business JSON.
-- It only renders and manages an existing `rule + option` schema.
-- Business concerns such as API requests, dirty checks, workflow control, and JSON-to-schema generation should stay outside this package.
-
-## Validation
-
-Current local verification for this package:
-
-- `./node_modules/.bin/vue-tsc --noEmit -p packages/algo-params-vue/tsconfig.json`
-- `node --test packages/algo-params-vue/__tests__/utils.test.mjs`
-- `./node_modules/.bin/unbuild packages/algo-params-vue`
+- This package renders an existing schema; it does not generate schema from business JSON.
+- Business-specific submit requests, dirty-state handling, and schema generation should stay outside the package.

@@ -9,6 +9,9 @@
   "scripts": {
     "build": "pnpm -r --if-present run build",
     "changeset": "changeset",
+    "demo:build": "pnpm --filter @ss-ui/react-demo build && pnpm --filter @ss-ui/vue-demo build",
+    "demo:react": "pnpm --filter @ss-ui/react-demo dev",
+    "demo:vue": "pnpm --filter @ss-ui/vue-demo dev",
     "release": "pnpm build && changeset publish",
     "test": "pnpm -r --if-present run test",
     "version-packages": "changeset version"

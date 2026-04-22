@@ -1,20 +1,14 @@
 # `@cardinal-odp/algo-params-react`
 
-React renderer for the `FcCreateAlgo` schema used in this repo.
+React renderer for the `rule + option` schema used by `FcCreateAlgo`.
 
-This package is intended for **React + Ant Design** projects that want to reuse the same `rule/option` schema shape as the Vue version.
-
-It is **not** an official `form-create` React renderer. The upstream `form-create` project currently documents Vue renderers only, so this package provides a React-compatible implementation for the schema subset we use here.
-
-Official package list: https://www.form-create.com/en/v3/guide/packages
+This package targets `React + Ant Design` projects that need to render the same schema shape as the Vue package. It is not an official `form-create` React renderer; it implements the subset used in this repo.
 
 ## Install
 
 ```bash
 npm install @cardinal-odp/algo-params-react react react-dom antd
 ```
-
-Then import the bundled styles:
 
 ```ts
 import '@cardinal-odp/algo-params-react/style.css';
@@ -23,152 +17,172 @@ import '@cardinal-odp/algo-params-react/style.css';
 ## Usage
 
 ```tsx
-import { useMemo, useRef } from 'react';
+import { Button, Space } from 'antd';
+import { useRef } from 'react';
 
 import FcCreateAlgoReact, {
-  type FcCreateAlgoRef,
+  type FcCreateAlgoReactExpose,
 } from '@cardinal-odp/algo-params-react';
 import '@cardinal-odp/algo-params-react/style.css';
 
-export default function Demo() {
-  const formRef = useRef<FcCreateAlgoRef>(null);
+const rule = [
+  {
+    type: 'input',
+    field: 'name',
+    title: '名称',
+    $required: '请输入名称',
+    props: {
+      placeholder: '请输入名称',
+    },
+  },
+  {
+    type: 'select',
+    field: 'status',
+    title: '状态',
+    options: [
+      { label: '启用', value: 'enabled' },
+      { label: '停用', value: 'disabled' },
+    ],
+  },
+];
 
-  const schema = useMemo(
-    () => ({
-      rule: [
-        {
-          type: 'input',
-          field: 'name',
-          title: '名称',
-          props: {
-            placeholder: '请输入名称',
-          },
-          validate: [{ required: true }],
-        },
-        {
-          type: 'select',
-          field: 'status',
-          title: '状态',
-          options: [
-            { label: '启用', value: 'enabled' },
-            { label: '停用', value: 'disabled' },
-          ],
-        },
-      ],
-      option: {
-        form: {
-          colon: true,
-          labelCol: { span: 8 },
-          wrapperCol: { span: 16 },
-        },
-        formData: {
-          status: 'enabled',
-        },
-      },
-    }),
-    [],
-  );
+const option = {
+  form: {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+  },
+  formData: {
+    status: 'enabled',
+  },
+  onSubmit(formData, api) {
+    api.submitResult = {
+      formData,
+      submittedAt: Date.now(),
+    };
+  },
+};
+
+export default function Demo() {
+  const formRef = useRef<FcCreateAlgoReactExpose>(null);
+
+  const handleSubmit = async () => {
+    const result = await formRef.current?.submit();
+    console.log('submit result', result);
+  };
+
+  const handleInspect = () => {
+    console.log(formRef.current?.getFormData());
+  };
 
   return (
-    <FcCreateAlgoReact
-      ref={formRef}
-      mode="edit"
-      option={schema.option}
-      rule={schema.rule}
-      onSubmit={(result) => {
-        console.log('submit result', result);
-      }}
-    />
+    <>
+      <Space style={{ marginBottom: 16 }}>
+        <Button type="primary" onClick={handleSubmit}>
+          Submit
+        </Button>
+        <Button onClick={handleInspect}>Get Schema</Button>
+      </Space>
+
+      <FcCreateAlgoReact
+        ref={formRef}
+        mode="edit"
+        option={option}
+        rule={rule}
+        onChange={(formData) => {
+          console.log('change', formData);
+        }}
+        onSubmit={(result) => {
+          console.log('onSubmit callback', result);
+        }}
+      />
+    </>
   );
 }
 ```
 
-## Props
+`submit()` first validates the form. If `option.onSubmit` exists, set `api.submitResult` inside that handler; otherwise `submit()` returns the current form values.
 
-`FcCreateAlgoReact` accepts these props:
+## Props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `rule` | `any[]` | `[]` | Form schema rules |
-| `option` | `Record<string, any>` | `undefined` | Form options, including `form` and `formData` |
-| `mode` | `'edit' \| 'preview'` | `'preview'` | Render editable controls or readonly preview |
-| `showInfo` | `boolean` | `true` | Whether to show field info tooltip |
-| `infoFormatter` | `(rule) => string` | `undefined` | Custom tooltip content builder |
-| `emptyText` | `ReactNode` | `'暂无表单配置'` | Empty state content |
-| `popupContainer` | `HTMLElement \| ((trigger) => HTMLElement)` | `undefined` | Popup mount target for dropdown-like controls |
-| `controlMaxWidth` | `number \| string` | `'500px'` | Max width for controls in edit mode |
-| `onReady` | `(api) => void` | `undefined` | Called after form API is ready |
-| `onChange` | `(formData) => void` | `undefined` | Called when form values change |
+| `rule` | `any[]` | `[]` | Schema rules |
+| `option` | `Record<string, any>` | `undefined` | Schema option object. `option.form` and `option.formData` are used directly |
+| `mode` | `'edit' \| 'preview'` | `'preview'` | Editable form or readonly preview |
+| `showInfo` | `boolean` | `true` | Inject tooltip info for fields and `div` title blocks |
+| `infoFormatter` | `(rule) => string` | `undefined` | Custom tooltip content |
+| `emptyText` | `string` | `'暂无表单配置'` | Empty state text |
+| `popupContainer` | `HTMLElement \| ((triggerNode) => HTMLElement \| null \| undefined)` | `undefined` | Popup mount target for label tooltips and popup controls such as `select` / `cascader` / pickers |
+| `controlMaxWidth` | `number \| string` | `'500px'` | Max width CSS variable for form controls |
+| `onReady` | `(api) => void` | `undefined` | Called when the internal form API is ready |
+| `onChange` | `(formData) => void` | `undefined` | Called on value change |
 | `onSubmit` | `(result) => void` | `undefined` | Called after `submit()` resolves |
-| `onValidate` | `(valid) => void` | `undefined` | Called after validation |
+| `onValidate` | `(valid) => void` | `undefined` | Called after `validate()` completes |
 
 ## Ref API
 
-Use `ref` to access imperative methods:
-
 ```tsx
-const ref = useRef<FcCreateAlgoRef>(null);
+const ref = useRef<FcCreateAlgoReactExpose>(null);
 
 await ref.current?.validate();
 await ref.current?.submit();
 ref.current?.reset();
-const formData = ref.current?.getFormData();
-const api = ref.current?.getApi();
 ref.current?.setSchema(nextRule, nextOption);
-```
 
-Methods:
+const schema = ref.current?.getFormData();
+const api = ref.current?.getApi();
+```
 
 | Method | Description |
 | --- | --- |
-| `validate()` | Runs field validation and returns `Promise<boolean>` |
-| `submit()` | Validates, resolves current form data, and returns submit result |
-| `reset()` | Resets the form back to current `option.formData` |
-| `getFormData()` | Returns `{ rule, option }` with the latest `formData` merged in |
-| `getApi()` | Returns the internal lightweight API wrapper |
-| `setSchema(rule, option)` | Imperatively replaces schema |
+| `validate()` | Runs `form.validateFields()` and returns `Promise<boolean>` |
+| `submit()` | Validates first, then runs `option.onSubmit(formData, api)` when present |
+| `reset()` | Resets the form and reapplies `option.formData` |
+| `getFormData()` | Returns `{ rule, option }` with latest `option.formData` merged in |
+| `getApi()` | Returns the lightweight internal API wrapper |
+| `setSchema(rule, option)` | Replaces the current schema |
 
-## Schema Compatibility
+## Exported Utilities
 
-This renderer is designed to consume the same schema structure used by the Vue package.
+```ts
+import {
+  hasSerializedFunctionMarker,
+  injectFormDataValues,
+  injectInfoToRules,
+  normalizePreviewRules,
+  reviveSerializedFunctions,
+} from '@cardinal-odp/algo-params-react';
+```
 
-Supported today:
+These helpers are pure functions and can be used outside the component.
 
-- Common fields: `input`, `textarea`, `password`, `inputNumber`, `number`
-- Choice controls: `select`, `radio`, `checkbox`, `switch`, `cascader`
-- Time controls: `datePicker`, `timePicker`
-- Layout/content blocks: `aCard`, `aAlert`, `aDivider`, `aRow`, `col`, `aSpace`, `aCollapse`, `aCollapsePanel`, `aTabs`, `div`
-- Preview-mode normalization for `select`, `cascader`, `switch`, `radio`, `checkbox`, `date/time`, `slider`
-- `option.formData` backfill
-- Serialized function restoration for schema values that use the `FORM-CREATE-PREFIX-function` marker
+## Supported Schema Subset
 
-## Important Limitations
+Currently implemented render types:
 
-- This package does **not** use `@form-create/ant-design-vue` internally.
-- It is **schema-compatible**, not feature-complete with Vue `form-create`.
-- Complex custom components, advanced linkage, slots, and framework-specific `form-create` extensions are not fully implemented.
-- `option.onSubmit` is supported when provided as a real function or when restored from the serialized function marker, but broader `form-create` runtime behavior is intentionally not replicated.
+- Fields: `input`, `password`, `textarea`, `inputNumber`, `select`, `radio`, `checkbox`, `switch`, `slider`, `cascader`, `datePicker`, `timePicker`
+- Layout / content: `aCard`, `aAlert`, `aDivider`, `aRow`, `row`, `col`, `aSpace`, `space`, `div`
+- Shared behaviors: `option.formData` backfill, info tooltip injection, preview normalization, serialized function revival
+
+The React renderer also reads `option.form.layout`, `option.form.labelCol`, and `option.form.wrapperCol`.
+
+## Limitations
+
+- This package does not embed Vue `form-create`; it only mirrors part of the schema behavior.
+- Validation support is intentionally narrow. Required validation currently uses `$required`, and `rule.validate` only covers common items such as `pattern`, `email`, `url`, and `minLen`.
+- Advanced `form-create` features such as custom components, slots, linkage, tabs/collapse containers, and framework-specific runtime extensions are not fully implemented.
 
 ## Styling
 
-The package ships a minimal standalone stylesheet and does not depend on this repo's Tailwind classes or theme variables.
+The package ships a standalone stylesheet.
 
-Available CSS variables:
+Custom colors now follow the active Ant Design theme token by default. You can still override them with CSS variables.
 
 ```css
 --fc-create-control-max-width
+--fc-create-empty-color
+--fc-create-info-border-color
+--fc-create-info-color
+--fc-create-card-hover-shadow
 --fc-create-shadow-color
 ```
-
-## Development Notes
-
-The React package lives alongside the Vue package:
-
-- Vue: [../algo-params-vue](../algo-params-vue)
-- React: current package
-
-Shared behavior is kept aligned at the schema level, especially around:
-
-- info injection
-- preview value normalization
-- `rule + option.formData` round-tripping
