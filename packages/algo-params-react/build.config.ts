@@ -9,7 +9,7 @@ export default defineBuildConfig({
       format: 'esm',
       input: './src',
       loaders: ['js'],
-      pattern: ['**/*.js'],
+      pattern: ['**/*.mjs'],
     },
     {
       builder: 'mkdist',

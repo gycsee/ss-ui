@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { theme as antdTheme } from 'ant-design-vue';
 
 // @ts-ignore
 import FormCreate from '@form-create/ant-design-vue';
@@ -45,6 +46,7 @@ const formData = ref<Record<string, any>>({});
 const schemaRule = ref<any[]>(props.rule ?? []);
 const schemaOption = ref<Record<string, any> | undefined>(props.option);
 const formKey = ref(0);
+const { token } = antdTheme.useToken();
 
 const defaultPopupContainer = (triggerNode: any) => {
   if (triggerNode?.parentNode) {
@@ -69,6 +71,47 @@ const resolvePopupContainer = (
   return popupContainer || defaultPopupContainer(triggerNode);
 };
 
+const resolveTooltipPopupContainer = (triggerNode: any) => {
+  if (props.popupContainer) {
+    return resolvePopupContainer(props.popupContainer, triggerNode);
+  }
+
+  if (typeof document !== 'undefined') {
+    return document.body;
+  }
+
+  return defaultPopupContainer(triggerNode);
+};
+
+const injectInfoPopupContainer = (rules: any[]): any[] => {
+  if (!Array.isArray(rules)) return [];
+
+  return rules.map((item) => {
+    if (typeof item !== 'object' || item === null) return item;
+
+    const nextItem = { ...item };
+
+    if (nextItem.info !== undefined && nextItem.info !== null && nextItem.info !== false) {
+      const baseInfo =
+        typeof nextItem.info === 'object'
+          ? nextItem.info
+          : { info: nextItem.info, show: true };
+
+      nextItem.info = {
+        ...baseInfo,
+        getPopupContainer: (triggerNode: any) =>
+          resolveTooltipPopupContainer(triggerNode),
+      };
+    }
+
+    if (Array.isArray(nextItem.children) && nextItem.children.length > 0) {
+      nextItem.children = injectInfoPopupContainer(nextItem.children);
+    }
+
+    return nextItem;
+  });
+};
+
 const parseSchemaValue = <T,>(value: T): T => {
   if (!value || !FormCreate.parseJson || !hasSerializedFunctionMarker(value)) {
     return value;
@@ -86,10 +129,13 @@ const processedRule = computed(() => {
   const ruleWithInfo = props.showInfo
     ? injectInfoToRules(ruleWithValues, props.infoFormatter)
     : ruleWithValues;
+  const ruleWithInfoPopup = props.showInfo
+    ? injectInfoPopupContainer(ruleWithInfo)
+    : ruleWithInfo;
 
   return props.mode === 'preview'
-    ? normalizePreviewRules(ruleWithInfo)
-    : ruleWithInfo;
+    ? normalizePreviewRules(ruleWithInfoPopup)
+    : ruleWithInfoPopup;
 });
 
 const processedOption = computed(() => {
@@ -122,10 +168,14 @@ const processedOption = computed(() => {
 });
 
 const containerStyle = computed(() => ({
+  '--fc-create-card-hover-shadow-token':
+    token.value.boxShadowSecondary || token.value.boxShadow,
   '--fc-create-control-max-width':
     typeof props.controlMaxWidth === 'number'
       ? `${props.controlMaxWidth}px`
       : props.controlMaxWidth,
+  '--fc-create-empty-color-token':
+    token.value.colorTextDescription || token.value.colorTextTertiary,
 }));
 
 watch(

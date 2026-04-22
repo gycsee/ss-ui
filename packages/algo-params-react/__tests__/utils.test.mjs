@@ -6,7 +6,7 @@ import {
   injectInfoToRules,
   normalizePreviewRules,
   reviveSerializedFunctions,
-} from '../src/utils.js';
+} from '../src/utils.mjs';
 
 test('injectInfoToRules prefers formatter content', () => {
   const [result] = injectInfoToRules(

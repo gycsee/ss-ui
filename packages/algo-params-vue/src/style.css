@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  color: #9ca3af;
+  color: var(--fc-create-empty-color, var(--fc-create-empty-color-token, #9ca3af));
   text-align: center;
 }
 
@@ -58,8 +58,13 @@
 }
 
 .fc-create-algo .ant-card-hoverable:hover {
-  box-shadow: 0 8px 16px -6px
-    var(--fc-create-shadow-color, rgba(22, 119, 255, 0.35)) !important;
+  box-shadow: var(
+    --fc-create-card-hover-shadow,
+    var(
+      --fc-create-card-hover-shadow-token,
+      0 8px 16px -6px var(--fc-create-shadow-color, rgba(22, 119, 255, 0.35))
+    )
+  ) !important;
 }
 
 .fc-create-algo.is-edit-mode .ant-form-item-control {

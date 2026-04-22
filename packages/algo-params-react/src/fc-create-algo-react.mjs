@@ -27,6 +27,7 @@ import {
   Switch,
   TimePicker,
   Tooltip,
+  theme,
 } from 'antd';
 
 import {
@@ -35,7 +36,7 @@ import {
   injectInfoToRules,
   normalizePreviewRules,
   reviveSerializedFunctions,
-} from './utils.js';
+} from './utils.mjs';
 
 function getDefaultPopupContainer(triggerNode) {
   if (triggerNode?.parentNode) {
@@ -55,6 +56,18 @@ function resolvePopupContainer(popupContainer, triggerNode) {
   }
 
   return popupContainer || getDefaultPopupContainer(triggerNode);
+}
+
+function getTooltipPopupContainer(popupContainer, triggerNode) {
+  if (popupContainer) {
+    return resolvePopupContainer(popupContainer, triggerNode);
+  }
+
+  if (typeof document !== 'undefined') {
+    return document.body;
+  }
+
+  return getDefaultPopupContainer(triggerNode);
 }
 
 function parseSchemaValue(value) {
@@ -135,7 +148,7 @@ function getInfoContent(rule, infoFormatter) {
   return '';
 }
 
-function renderLabel(rule, infoFormatter) {
+function renderLabel(rule, infoFormatter, popupContainer) {
   const labelText = getLabel(rule);
   const infoContent = getInfoContent(rule, infoFormatter);
 
@@ -155,7 +168,8 @@ function renderLabel(rule, infoFormatter) {
           { style: { whiteSpace: 'pre-line' } },
           String(infoContent),
         ),
-        getPopupContainer: getDefaultPopupContainer,
+        getPopupContainer: (triggerNode) =>
+          getTooltipPopupContainer(popupContainer, triggerNode),
       },
       h('span', { className: 'fc-create-algo-react__info' }, '?'),
     ),
@@ -375,7 +389,7 @@ function renderRule(rule, key, context, renderRules) {
   const itemProps = {
     key,
     name: rule.field,
-    label: renderLabel(rule, context.infoFormatter),
+    label: renderLabel(rule, context.infoFormatter, context.popupContainer),
     rules: buildValidateRules(rule),
     style: rule.style,
   };
@@ -408,6 +422,7 @@ const FcCreateAlgoReact = forwardRef(function FcCreateAlgoReact(props, ref) {
   } = props;
 
   const [form] = Form.useForm();
+  const { token } = theme.useToken();
   const [schemaRule, setSchemaRule] = useState(Array.isArray(rule) ? rule : []);
   const [schemaOption, setSchemaOption] = useState(option);
   const apiRef = useRef({ submitResult: undefined });
@@ -574,10 +589,18 @@ const FcCreateAlgoReact = forwardRef(function FcCreateAlgoReact(props, ref) {
     {
       className,
       style: {
+        '--fc-create-card-hover-shadow-token':
+          token.boxShadowSecondary || token.boxShadow,
         '--fc-create-control-max-width':
           typeof controlMaxWidth === 'number'
             ? `${controlMaxWidth}px`
             : controlMaxWidth,
+        '--fc-create-empty-color-token':
+          token.colorTextDescription || token.colorTextTertiary,
+        '--fc-create-info-border-color-token':
+          token.colorBorderSecondary || token.colorBorder,
+        '--fc-create-info-color-token':
+          token.colorTextDescription || token.colorTextTertiary,
       },
     },
     h(
