@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "pnpm unbuild",
-    "test": "node --test ./__tests__/*.test.mjs"
+    "build": "pnpm exec unbuild",
+    "test": "pnpm build && node --test ./__tests__/*.test.mjs"
   },
   "files": [
     "dist"

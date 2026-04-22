@@ -5,7 +5,7 @@ import {
   injectFormDataValues,
   injectInfoToRules,
   normalizePreviewRules,
-} from '../src/utils.ts';
+} from '../dist/utils.mjs';
 
 test('injectInfoToRules prefers custom formatter output', () => {
   const rules = [{ type: 'input', field: 'name', title: '名称' }];

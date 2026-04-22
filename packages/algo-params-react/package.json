@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "pnpm unbuild",
+    "build": "pnpm exec unbuild",
     "test": "node --test ./__tests__/*.test.mjs"
   },
   "files": [
